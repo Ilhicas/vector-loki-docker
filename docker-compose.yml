@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  loki:
+    image: grafana/loki:2.2.1
+    command: -config.file=/etc/loki/loki-config.yaml
+    ports:
+      - 3100:3100
+    volumes:
+      - ./loki:/etc/loki
+      - ./loki-data:/loki-data
+  fakeservice:
+    image: nicholasjackson/fake-service:v0.24.2
+    environment:
+      LOG_OUTPUT: /var/log/web.log
+      LOG_FORMAT: json
+    volumes:
+      - fakeservice:/var/log
+  vector:
+    image: timberio/vector:latest-alpine
+    command: --config /etc/vector/vector.toml
+    volumes:
+      - ./vector:/etc/vector
+      - fakeservice:/var/log
+    network_mode: "service:fakeservice"
+volumes:
+  fakeservice:

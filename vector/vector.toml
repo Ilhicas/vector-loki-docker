@@ -1,0 +1,18 @@
+[sources.logs]
+type = "file"
+ignore_older_secs = 600
+include = ["/var/log/web.log"]
+read_from = "beginning"
+
+[transforms.logs_json]
+inputs       = ["logs"]
+type         = "remap"
+source       = ". = parse_json!(.message)"
+
+[sinks.loki]
+type = "loki"
+inputs = ["logs_json"]
+endpoint = "http://loki:3100"
+encoding.codec = "json"
+labels = {app="web", env="production"}
+healthcheck = false
